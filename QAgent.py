@@ -4,6 +4,7 @@ import math
 
 class QAgent:
     def __init__(self, state_shape, actions, state_min_values=None, state_max_values=None, Q=None):
+        # Set internal variable
         self.state_shape = state_shape.copy()
         self.actions = actions
 
@@ -14,15 +15,22 @@ class QAgent:
             self.state_min=torch.zeros(self.state_shape)
             self.state_max=self.state_shape-1
         state_shape.append(actions)
+
+        # Load Q-Table from file if specified
         if Q:
             self.Q=torch.load(Q)
         else:
             self.Q = torch.ones(tuple(state_shape))
 
+        # BQTable is the binary reduction of the Q-Table, showing the greedy policy obtained with the current Q-Table
+        # BQTable has the same shape as Q-Table, BQTable is binary and for all states x, the sum of Q[x,:] equals 1
         self.BQTable = None
+
+        # Random number generators
         self.epsRNG = np.random.default_rng()
         self.aRNG = np.random.default_rng()
 
+    # Get discrete value of a given continuous data point
     @staticmethod
     def getDiscreteValue(x, min_val, max_val, step_no):
         step = (max_val - min_val) / float(step_no)
@@ -32,12 +40,14 @@ class QAgent:
         else:
             return index
 
+    # Get the discretised version of the input state vector
     def discrete(self, state):
         newState = torch.zeros(len(self.state_shape), dtype=int)
         for i in range(len(self.state_shape)):
             newState[i] = QAgent.getDiscreteValue(state[i], self.state_min[i], self.state_max[i], self.state_shape[i])
         return newState
 
+# Take a random action with probability eps. Otherwise, choose the action with the maximum Q-Value for the current state.
     def getAction(self, state, eps=0):  # state is a non negative integer tuple dimension equal to state space dimension
         rnd = self.epsRNG.random(1)
         if rnd < eps:
@@ -48,13 +58,16 @@ class QAgent:
             action = np.argmax(self.Q.numpy()[tuple(state)])
         return action
 
-        """state=self.discrete(state)
+        """
+        # Optimal policy for MountainCar-v0
+        state=self.discrete(state)
         if state[1]<self.state_shape[1]/2:
             ac=0
         else:
             ac=2
         return ac"""
 
+    # Do a training step
     def updateQ(self, prevState, prevAction, reward, newState, discount, lr=0.01):
         prevState=self.discrete(prevState)
         newAction=self.getAction(newState,0)
@@ -64,6 +77,14 @@ class QAgent:
             tuple(prevState) + tuple([prevAction])])
         return
 
+    # Do a training step for a final action
+    def updateQFinal(self, prevState, prevAction):
+        prevState = self.discrete(prevState)
+        self.Q[tuple(prevState)+tuple([prevAction])]=0
+        return
+
+    # Get BQTable, defined as:
+    # Binary table such that for all state-action pairs (x,a) we get the probability of taking action a at state x, following the greedy policy (i.e. either 0 or 1)
     def getBinaryQTable(self, index=None):
         self.BQTable = self.Q.clone()
         flatQTable = self.BQTable.view(-1, self.actions)
