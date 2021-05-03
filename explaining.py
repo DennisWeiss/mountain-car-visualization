@@ -30,8 +30,10 @@ env = gym.make('MountainCar-v0')
 # Number of episodes to simulate and frequency to show simulation before analysis
 EPISODES=1
 RENDER_EACH=1
+
+foldername="eps02"
 for k in ks:
-    A=QAgent([15,15],3,env.observation_space.low,env.observation_space.high,Q="q-"+str(k)+"k")
+    A=QAgent([15,15],3,env.observation_space.low,env.observation_space.high,Q=foldername+"/q-"+str(k)+"k")
     print(A.Q)
     for ep in range(EPISODES):
         X=env.reset() # X is the state var
@@ -66,7 +68,7 @@ for k in ks:
     i10,i20,i11,i21=getIndexes(A2)
     plt.scatter(i11,i21, c='g',s=200)
     #plt.show()
-    plt.savefig("res"+str(k)+"k.png")
+    plt.savefig(foldername+"/fig"+str(k)+"k.png")
 
     plt.close()
 """

@@ -21,12 +21,13 @@ EPSILON_DECAY_END=EPISODES//2
 deltaeps=eps/(EPSILON_DECAY_END-EPSILON_DECAY_START)
 RENDER_EACH=2000
 SAVE_EACH=1000
+foldername="eps02"
 # Number of episodes to wait before writing on the console
 SAY_HI_EACH=200
 hi=0
 for ep in range(EPISODES):
     if ep%SAVE_EACH==0:
-        torch.save(A.Q, "q-" + str(int(ep / SAVE_EACH)) + "k")
+        torch.save(A.Q, foldername+"/q-" + str(int(ep / SAVE_EACH)) + "k")
     if ep%SAY_HI_EACH==0:
         # Print out code to show progress
         print("Hi from episode "+str(hi*SAY_HI_EACH))
@@ -51,7 +52,7 @@ for ep in range(EPISODES):
     if ep>=EPSILON_DECAY_START and ep<=EPSILON_DECAY_END:
         eps-=deltaeps
 env.close()
-torch.save(A.Q,"q-"+str(int(EPISODES/1000))+"k")
+torch.save(A.Q,foldername+"/q-"+str(int(EPISODES/1000))+"k")
 
 """
 A=QAgent([18,14],[0,1,2],env.observation_space.low,env.observation_space.high)
