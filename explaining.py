@@ -24,6 +24,24 @@ def getIndexes(T):
                 i20.append(j)
     return i10,i20,i11,i21
 
+
+def visualizeBQTable(A):
+    plt.figure(figsize=(6, 6), dpi=300)
+    BQT = A.getBinaryQTable()
+    A0 = BQT[:, :, 0]
+    A1 = BQT[:, :, 1]
+    A2 = BQT[:, :, 2]
+    print(A0)
+    # Blue means go left, green means go right, blank means do nothing
+    i10, i20, i11, i21 = getIndexes(A0)
+    plt.scatter(i11, i21, c='b', s=100)
+    i10, i20, i11, i21 = getIndexes(A2)
+    plt.scatter(i11, i21, c='g', s=200)
+    plt.show()
+    plt.savefig(foldername + "/fig" + str(k) + "k.png")
+
+    plt.close()
+
 # Naming the model files as "q-<# of training episodes in thousands>k", we define the model numbers we want to load
 ks=[0,1,2,3,4,5,6,7,8,9,10]
 env = gym.make('MountainCar-v0')
@@ -32,7 +50,7 @@ EPISODES=1
 RENDER_EACH=1
 
 foldername="eps02"
-for k in ks:
+for k in [10]:
     A=QAgent([15,15],3,env.observation_space.low,env.observation_space.high,Q=foldername+"/q-"+str(k)+"k")
     print(A.Q)
     for ep in range(EPISODES):
@@ -55,22 +73,8 @@ for k in ks:
 
     env.close()
 
-    #Visualise Q table for each action
-    plt.figure(figsize=(6, 6), dpi=300)
-    BQT=A.getBinaryQTable()
-    A0=BQT[:,:,0]
-    A1=BQT[:,:,1]
-    A2=BQT[:,:,2]
-    print(A0)
-    # Blue means go left, green means go right, blank means do nothing
-    i10,i20,i11,i21=getIndexes(A0)
-    plt.scatter(i11,i21, c='b', s=100)
-    i10,i20,i11,i21=getIndexes(A2)
-    plt.scatter(i11,i21, c='g',s=200)
-    #plt.show()
-    plt.savefig(foldername+"/fig"+str(k)+"k.png")
+    visualizeBQTable(A)
 
-    plt.close()
 """
 A=QAgent([18,14],[0,1,2],env.observation_space.low,env.observation_space.high)
 for i in range(1000):
