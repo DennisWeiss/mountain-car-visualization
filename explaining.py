@@ -31,7 +31,7 @@ def getCertainties(T):
     for i in range(s[0]):
         for j in range(s[1]):
             if T[i, j] > 0:
-                certainties.append(min(40 / (1 - T[i, j]) ** 0.5, 500))
+                certainties.append(400 * T[i, j] ** 3)
                 # certainties.append(i + j)
                 print(1 - T[i, j])
     print(certainties)
@@ -70,6 +70,31 @@ def visualizeQTableWithCertainty(A):
     plt.savefig(foldername + "/figWithCertainty" + str(k) + "k.png")
 
     plt.close()
+
+
+def visualizeQTableWithCertaintyInterpolated(A, resolution):
+    QWithCertaintyInterpolated = A.getQTableWithCertaintyInterpolated(resolution)
+    X = list(range(QWithCertaintyInterpolated.shape[0]))
+    Y = list(range(QWithCertaintyInterpolated.shape[1]))
+    A0 = QWithCertaintyInterpolated[:, :, 0]
+    A1 = QWithCertaintyInterpolated[:, :, 1]
+    A2 = QWithCertaintyInterpolated[:, :, 2]
+    plt.figure(figsize=(6, 6), dpi=300)
+    plt.contourf(A0, cmap='Blues')
+    plt.show()
+    plt.close()
+    plt.figure(figsize=(6, 6), dpi=300)
+    plt.contourf(A1, cmap='Reds')
+    plt.show()
+    plt.close()
+    plt.figure(figsize=(6, 6), dpi=300)
+    plt.contourf(A2, cmap='Greens')
+    plt.show()
+    plt.close()
+    print('contour')
+
+
+
 # Naming the model files as "q-<# of training episodes in thousands>k", we define the model numbers we want to load
 ks=[0,1,2,3,4,5,6,7,8,9,10]
 env = gym.make('MountainCar-v0')
@@ -104,6 +129,7 @@ for k in [10]:
 
     visualizeBQTable(A)
     visualizeQTableWithCertainty(A)
+    visualizeQTableWithCertaintyInterpolated(A, 10)
 
 """
 A=QAgent([18,14],[0,1,2],env.observation_space.low,env.observation_space.high)

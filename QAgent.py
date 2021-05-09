@@ -112,7 +112,6 @@ class QAgent:
             j = torch.argmax(certainties)
             newQ = torch.zeros(self.actions)
             newQ[j] = certainties[j]
-            print(i, newQ[j])
             flatQTable[i] = newQ
         if index:
             return self.QTableWithCertainty[tuple(index)]
@@ -120,16 +119,18 @@ class QAgent:
             return self.QTableWithCertainty
 
     def getQTableWithCertaintyInterpolated(self, resolution):
-        QTableWithCertainty = self.getQTableWithCertainty(self)
-        QTableWithCertaintyInterpolated = torch.zeros(resolution * self.actions)
+        QTableWithCertainty = self.getQTableWithCertainty()
+        QTableWithCertaintyInterpolated = torch.zeros(resolution * QTableWithCertainty.shape[0], resolution * QTableWithCertainty.shape[1], self.actions)
+        print('shape', QTableWithCertaintyInterpolated.shape)
         for i in range(QTableWithCertaintyInterpolated.shape[0]):
             for j in range(QTableWithCertaintyInterpolated.shape[1]):
                 i_ref, j_ref = int(i / resolution), int(j / resolution)
-                for k in range(len(self.actions)):
+                for k in range(self.actions):
                     s = (i - resolution * i_ref) / resolution
                     t = (j - resolution * j_ref) / resolution
+                    print(s, t)
                     QTableWithCertaintyInterpolated[i, j, k] = (1-t) * (1-s) * QTableWithCertainty[i_ref, j_ref, k] \
-                                                               + (1-t) * s * QTableWithCertainty[i_ref+1, j_ref, k] \
-                                                               + t * (1-s) * QTableWithCertainty[i_ref, j_ref+1, k] \
-                                                               + t * s * QTableWithCertainty[i_ref+1, j_ref+1, k]
+                                                               + (1-t) * s * QTableWithCertainty[min(i_ref+1, QTableWithCertainty.shape[0]-1), j_ref, k] \
+                                                               + t * (1-s) * QTableWithCertainty[i_ref, min(j_ref+1, QTableWithCertainty.shape[1]-1), k] \
+                                                               + t * s * QTableWithCertainty[min(i_ref+1, QTableWithCertainty.shape[0]-1), min(j_ref+1, QTableWithCertainty.shape[1]-1), k]
         return QTableWithCertaintyInterpolated
