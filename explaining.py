@@ -16,13 +16,26 @@ def getIndexes(T):
     i20=[]
     for i in range(s[0]):
         for j in range(s[1]):
-            if T[i,j]==1:
+            if T[i,j] > 0:
                 i11.append(i)
                 i21.append(j)
             else:
                 i10.append(i)
                 i20.append(j)
     return i10,i20,i11,i21
+
+
+def getCertainties(T):
+    s = T.shape
+    certainties = []
+    for i in range(s[0]):
+        for j in range(s[1]):
+            if T[i, j] > 0:
+                certainties.append(min(40 / (1 - T[i, j]) ** 0.5, 500))
+                # certainties.append(i + j)
+                print(1 - T[i, j])
+    print(certainties)
+    return certainties
 
 
 def visualizeBQTable(A):
@@ -34,7 +47,7 @@ def visualizeBQTable(A):
     print(A0)
     # Blue means go left, green means go right, blank means do nothing
     i10, i20, i11, i21 = getIndexes(A0)
-    plt.scatter(i11, i21, c='b', s=100)
+    plt.scatter(i11, i21, c='b', s=200)
     i10, i20, i11, i21 = getIndexes(A2)
     plt.scatter(i11, i21, c='g', s=200)
     plt.show()
@@ -42,6 +55,21 @@ def visualizeBQTable(A):
 
     plt.close()
 
+
+def visualizeQTableWithCertainty(A):
+    plt.figure(figsize=(6, 6), dpi=300)
+    QTWithCertainty = A.getQTableWithCertainty()
+    A0 = QTWithCertainty[:, :, 0]
+    A1 = QTWithCertainty[:, :, 1]
+    A2 = QTWithCertainty[:, :, 2]
+    i10, i20, i11, i21 = getIndexes(A0)
+    plt.scatter(i11, i21, c='b', s=getCertainties(A0))
+    i10, i20, i11, i21 = getIndexes(A2)
+    plt.scatter(i11, i21, c='g', s=getCertainties(A2))
+    plt.show()
+    plt.savefig(foldername + "/figWithCertainty" + str(k) + "k.png")
+
+    plt.close()
 # Naming the model files as "q-<# of training episodes in thousands>k", we define the model numbers we want to load
 ks=[0,1,2,3,4,5,6,7,8,9,10]
 env = gym.make('MountainCar-v0')
@@ -59,8 +87,9 @@ for k in [10]:
         done=False
         while not done:
             if ep % RENDER_EACH == 0:
-                sleep(0.05)
-                env.render()
+                pass
+                # sleep(0.05)
+                # env.render()
             ac=A.getAction(X)
             (newX, r, done, i) = env.step(ac)
             X=newX
@@ -74,6 +103,7 @@ for k in [10]:
     env.close()
 
     visualizeBQTable(A)
+    visualizeQTableWithCertainty(A)
 
 """
 A=QAgent([18,14],[0,1,2],env.observation_space.low,env.observation_space.high)

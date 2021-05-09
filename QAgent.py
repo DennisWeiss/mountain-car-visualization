@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional
 import numpy as np
 import math
 
@@ -25,6 +26,9 @@ class QAgent:
         # BQTable is the binary reduction of the Q-Table, showing the greedy policy obtained with the current Q-Table
         # BQTable has the same shape as Q-Table, BQTable is binary and for all states x, the sum of Q[x,:] equals 1
         self.BQTable = None
+        # QTableWithCertainty has the sam shape as Q-Table, The QTable entry is 0 if the actions will not be chosen in
+        # a given state under a greedy policy and otherwise it takes the Q value (certainty) of that action
+        self.QTableWithCertainty = None
 
         # Random number generators
         self.epsRNG = np.random.default_rng()
@@ -97,3 +101,20 @@ class QAgent:
             return self.BQTable[tuple(index)]
         else:
             return self.BQTable
+
+    # QTableWithCertainty has the sam shape as Q-Table, The QTable entry is 0 if the actions will not be chosen in
+    # a given state under a greedy policy and otherwise it takes the Q value (certainty) of that action
+    def getQTableWithCertainty(self, index=None):
+        self.QTableWithCertainty = self.Q.clone()
+        flatQTable = self.QTableWithCertainty.view(-1, self.actions)
+        for i, elem in enumerate(flatQTable):
+            certainties = torch.nn.functional.softmax(elem)
+            j = torch.argmax(certainties)
+            newQ = torch.zeros(self.actions)
+            newQ[j] = certainties[j]
+            print(i, newQ[j])
+            flatQTable[i] = newQ
+        if index:
+            return self.QTableWithCertainty[tuple(index)]
+        else:
+            return self.QTableWithCertainty
