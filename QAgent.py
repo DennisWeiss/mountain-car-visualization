@@ -118,3 +118,18 @@ class QAgent:
             return self.QTableWithCertainty[tuple(index)]
         else:
             return self.QTableWithCertainty
+
+    def getQTableWithCertaintyInterpolated(self, resolution):
+        QTableWithCertainty = self.getQTableWithCertainty(self)
+        QTableWithCertaintyInterpolated = torch.zeros(resolution * self.actions)
+        for i in range(QTableWithCertaintyInterpolated.shape[0]):
+            for j in range(QTableWithCertaintyInterpolated.shape[1]):
+                i_ref, j_ref = int(i / resolution), int(j / resolution)
+                for k in range(len(self.actions)):
+                    s = (i - resolution * i_ref) / resolution
+                    t = (j - resolution * j_ref) / resolution
+                    QTableWithCertaintyInterpolated[i, j, k] = (1-t) * (1-s) * QTableWithCertainty[i_ref, j_ref, k] \
+                                                               + (1-t) * s * QTableWithCertainty[i_ref+1, j_ref, k] \
+                                                               + t * (1-s) * QTableWithCertainty[i_ref, j_ref+1, k] \
+                                                               + t * s * QTableWithCertainty[i_ref+1, j_ref+1, k]
+        return QTableWithCertaintyInterpolated
