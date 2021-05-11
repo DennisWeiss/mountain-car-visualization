@@ -128,7 +128,6 @@ class QAgent:
                 for k in range(self.actions):
                     s = (i - resolution * i_ref) / resolution
                     t = (j - resolution * j_ref) / resolution
-                    print(s, t)
                     QTableWithCertaintyInterpolated[i, j, k] = (1-t) * (1-s) * QTableWithCertainty[i_ref, j_ref, k] \
                                                                + (1-t) * s * QTableWithCertainty[min(i_ref+1, QTableWithCertainty.shape[0]-1), j_ref, k] \
                                                                + t * (1-s) * QTableWithCertainty[i_ref, min(j_ref+1, QTableWithCertainty.shape[1]-1), k] \

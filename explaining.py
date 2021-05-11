@@ -74,8 +74,6 @@ def visualizeQTableWithCertainty(A):
 
 def visualizeQTableWithCertaintyInterpolated(A, resolution):
     QWithCertaintyInterpolated = A.getQTableWithCertaintyInterpolated(resolution)
-    X = list(range(QWithCertaintyInterpolated.shape[0]))
-    Y = list(range(QWithCertaintyInterpolated.shape[1]))
     A0 = QWithCertaintyInterpolated[:, :, 0]
     A1 = QWithCertaintyInterpolated[:, :, 1]
     A2 = QWithCertaintyInterpolated[:, :, 2]
@@ -91,7 +89,6 @@ def visualizeQTableWithCertaintyInterpolated(A, resolution):
     plt.contourf(A2, cmap='Greens')
     plt.show()
     plt.close()
-    print('contour')
 
 
 
@@ -113,8 +110,8 @@ for k in [10]:
         while not done:
             if ep % RENDER_EACH == 0:
                 pass
-                # sleep(0.05)
-                # env.render()
+                sleep(0.05)
+                env.render()
             ac=A.getAction(X)
             (newX, r, done, i) = env.step(ac)
             X=newX
